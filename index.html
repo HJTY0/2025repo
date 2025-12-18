@@ -3,37 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2025年度群聊人格报告</title>
-    <!-- 引入 Tailwind CSS 进行快速布局 -->
+    <title>2025 年度群聊报告 - HJTY</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Anime.js 用于复杂动画 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <!-- 引入 Chart.js 用于图表 -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        /* --- 全局样式 & 字体 --- */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=ZCOOL+XiaoWei&display=swap');
-
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* 禁止默认滚动 */
+        /* 全局字体与背景 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #0f172a;
-            color: #e2e8f0;
-            font-family: 'Noto Serif SC', serif;
+            color: #fff;
+            overflow: hidden;
         }
 
-        /* --- 背景动态渐变 --- */
-        .bg-gradient-animate {
-            background: linear-gradient(-45deg, #020024, #090979, #1c1c3c, #00d4ff);
+        /* 动态极光背景 */
+        .aurora-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(125deg, #000000 0%, #1a103c 35%, #0f2e38 70%, #000000 100%);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
             z-index: -2;
+        }
+        
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(white 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.1;
+            z-index: -1;
         }
 
         @keyframes gradientBG {
@@ -42,768 +53,461 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* 星星粒子容器 */
-        #stars-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: twinkle var(--duration) ease-in-out infinite;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.2); }
-        }
-
-        /* --- 滑动容器 --- */
-        .swiper-container {
+        /* Swiper 容器 */
+        .swiper {
+            width: 100%;
             height: 100vh;
-            width: 100vw;
-            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
         }
 
-        .slide {
-            height: 100vh;
-            width: 100vw;
-            position: relative;
+        .swiper-slide {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 2rem;
             box-sizing: border-box;
-            opacity: 0;
-            transition: opacity 1s ease 0.5s; /* 延迟显示内容 */
+            opacity: 0; /* 初始隐藏，由动画控制显示 */
+            transition: opacity 0.5s;
         }
-
-        .slide.active {
+        
+        .swiper-slide-active {
             opacity: 1;
         }
 
-        /* --- 向上滑动提示 --- */
-        .arrow-up {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 30px;
-            border-left: 2px solid rgba(255,255,255,0.5);
-            border-top: 2px solid rgba(255,255,255,0.5);
-            transform: translateX(-50%) rotate(45deg);
-            animation: arrowAnim 2s infinite;
-            z-index: 100;
+        /* 玻璃拟态卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
-        @keyframes arrowAnim {
-            0% { opacity: 0; bottom: 20px; }
-            50% { opacity: 1; bottom: 30px; }
-            100% { opacity: 0; bottom: 40px; }
-        }
-
-        /* --- 特殊组件样式 --- */
+        /* 头像光晕 */
         .avatar-glow {
-            box-shadow: 0 0 30px rgba(100, 200, 255, 0.4);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
             animation: pulse 3s infinite;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(100, 200, 255, 0.4); }
-            70% { box-shadow: 0 0 0 20px rgba(100, 200, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(100, 200, 255, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
         }
 
-        .highlight-text {
-            color: #67e8f9; /* cyan-300 */
-            font-weight: bold;
-            font-family: 'ZCOOL XiaoWei', serif;
+        /* 音乐旋转图标 */
+        .music-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: spin 4s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* 上滑提示 */
+        .swipe-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            animation: bounce 2s infinite;
+            opacity: 0.7;
         }
 
-        .keyword-main {
-            font-size: 5rem;
-            background: linear-gradient(to right, #fff, #a5f3fc);
+        /* 关键词样式 */
+        .keyword-item {
+            display: inline-block;
+            margin: 5px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        /* 柱状图样式 */
+        .bar-container {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 100px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .bar {
+            width: 3%;
+            background: linear-gradient(to top, #4f46e5, #ec4899);
+            border-radius: 2px;
+            opacity: 0.7;
+        }
+
+        /* 引用语样式 */
+        .quote-bg {
+            position: relative;
+        }
+        .quote-bg::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            font-size: 60px;
+            color: rgba(255,255,255,0.1);
+            font-family: serif;
+        }
+
+        /* 闪烁文字 */
+        .typing-effect {
+            border-right: 2px solid rgba(255,255,255,0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            animation: blink-caret .75s step-end infinite;
+        }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: rgba(255,255,255,0.7); } }
+
+        /* 重点数字高亮 */
+        .highlight-num {
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-family: 'ZCOOL XiaoWei', serif;
-            text-shadow: 0 0 20px rgba(103, 232, 249, 0.5);
+            font-weight: bold;
         }
-
-        .bubble {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 12px;
+        
+        /* 针对 Keyword Representations 的特殊样式 */
+        .echo-text {
+            font-family: 'Songti SC', serif;
+            line-height: 1.8;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
         }
-
-        /* 词云动画 */
-        .word-cloud-item {
-            position: absolute;
-            font-family: 'ZCOOL XiaoWei', serif;
-            color: rgba(255,255,255,0.6);
-            transition: all 0.5s;
-        }
-
-        /* 打字机光标 */
-        .typing-cursor::after {
-            content: '|';
-            animation: blink 1s infinite;
-        }
-        @keyframes blink { 50% { opacity: 0; } }
-
-        /* 音乐唱片旋转 */
-        .disk-rotate {
-            animation: rotate 10s linear infinite;
-        }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
 <body>
 
     <!-- 背景 -->
-    <div class="bg-gradient-animate"></div>
-    <div id="stars-container"></div>
+    <div class="aurora-bg"></div>
+    <div class="stars"></div>
 
-    <!-- 滑动提示 -->
-    <div class="arrow-up" id="arrow"></div>
-
-    <!-- 主容器 -->
-    <div class="swiper-container" id="swiper">
-        
-        <!-- P1: 封面 -->
-        <section class="slide active" id="slide-0">
-            <div class="relative z-10 text-center">
-                <img id="user-avatar" src="" alt="Avatar" class="w-32 h-32 rounded-full mx-auto mb-6 border-4 border-white/20 avatar-glow object-cover">
-                <h2 class="text-2xl font-light mb-2 text-blue-200">Hi, <span id="user-name" class="font-bold text-white"></span></h2>
-                <h1 class="text-4xl md:text-5xl font-bold mb-4 font-serif tracking-wider mt-4">2025<br>群聊人格报告</h1>
-                <p class="text-sm text-blue-300 mt-8 opacity-80">时间跨度: 2025.11.10 - 2025.12.17</p>
-                <div class="mt-12 text-sm text-gray-400">下滑开启回忆</div>
-            </div>
-        </section>
-
-        <!-- P2: 基础数据 & 活跃概览 -->
-        <section class="slide" id="slide-1">
-            <div class="max-w-md w-full text-center space-y-8">
-                <div class="text-lg animate-fade-up">这段时间里</div>
-                <div class="text-left bg-white/5 p-6 rounded-2xl border border-white/10 backdrop-blur-sm animate-fade-up delay-100">
-                    <p class="mb-4">你一共在这个群发送了 <span class="text-4xl highlight-text" id="msg-count">0</span> 条消息</p>
-                    <p>平均每条消息 <span class="highlight-text" id="avg-chars">0</span> 个字</p>
-                    <p class="mt-4 text-sm text-gray-300">短小精悍，或是字字珠玑？</p>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 animate-fade-up delay-200">
-                    <div class="bg-blue-900/30 p-4 rounded-xl">
-                        <div class="text-2xl font-bold text-yellow-300" id="active-days">0</div>
-                        <div class="text-xs text-gray-400">活跃天数</div>
-                    </div>
-                    <div class="bg-blue-900/30 p-4 rounded-xl">
-                        <div class="text-2xl font-bold text-pink-300" id="standby-hours">0</div>
-                        <div class="text-xs text-gray-400">待机小时</div>
-                    </div>
-                </div>
-                <p class="text-sm italic text-blue-200 mt-4" id="time-comment"></p>
-            </div>
-        </section>
-
-        <!-- P3: 作息规律 (图表) -->
-        <section class="slide" id="slide-2">
-            <div class="w-full max-w-lg">
-                <h3 class="text-2xl mb-6 text-center font-serif">你的生物钟</h3>
-                <div class="relative h-64 w-full mb-6 bg-black/20 rounded-lg p-2">
-                    <canvas id="hourChart"></canvas>
-                </div>
-                <div class="text-center space-y-4">
-                    <p>你在 <span class="highlight-text text-xl" id="peak-hour"></span> 点最为活跃</p>
-                    <p>是个 <span class="highlight-text" id="owl-type"></span></p>
-                    <div class="text-sm bg-white/5 p-3 rounded inline-block mt-2">
-                        <p class="text-gray-300">最早发言: <span id="earliest-msg-time"></span></p>
-                        <p class="text-gray-300">最晚修仙: <span id="latest-msg-time"></span></p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- P4: 社交关系 (最在意/被在意) -->
-        <section class="slide" id="slide-3">
-            <h3 class="text-2xl mb-8 font-serif">羁绊·链接</h3>
-            
-            <!-- Most Care -->
-            <div class="w-full max-w-md relative mb-8 animate-slide-right">
-                <div class="absolute -left-4 top-0 text-6xl opacity-10 font-bold">FOCUS</div>
-                <div class="bg-gradient-to-r from-purple-900/50 to-blue-900/50 p-6 rounded-r-2xl border-l-4 border-purple-400">
-                    <div class="text-xs text-purple-300 uppercase tracking-widest mb-1">你最关注的人</div>
-                    <div class="flex justify-between items-center">
-                        <div class="text-2xl font-bold" id="care-name"></div>
-                        <div class="text-purple-200 text-sm">关注度 <span id="care-score" class="text-xl font-bold"></span></div>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2">虽然只@了TA <span id="care-at"></span> 次，但你们的窗口期长达 <span id="care-window"></span> 秒</p>
-                </div>
-            </div>
-
-            <!-- Cared By -->
-            <div class="w-full max-w-md relative animate-slide-left delay-200">
-                 <div class="absolute -right-4 top-0 text-6xl opacity-10 font-bold">FANS</div>
-                <div class="bg-gradient-to-l from-pink-900/50 to-red-900/50 p-6 rounded-l-2xl border-r-4 border-pink-400 text-right">
-                    <div class="text-xs text-pink-300 uppercase tracking-widest mb-1">最关注你的人</div>
-                    <div class="flex justify-between items-center flex-row-reverse">
-                        <div class="text-2xl font-bold" id="fans-name"></div>
-                        <div class="text-pink-200 text-sm">关注度 <span id="fans-score" class="text-xl font-bold"></span></div>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-2">TA回复了你 <span id="fans-reply"></span> 次，@了你 <span id="fans-at"></span> 次</p>
-                </div>
-            </div>
-
-            <!-- CP -->
-            <div class="mt-8 text-center animate-fade-in delay-500">
-                <p class="text-sm text-gray-400 mb-2">你的官方认证 CP</p>
-                <div class="inline-flex items-center bg-white/10 px-6 py-2 rounded-full border border-white/20">
-                    <span class="font-bold text-yellow-300" id="cp-a"></span>
-                    <span class="mx-2 text-red-500">❤</span>
-                    <span class="font-bold text-yellow-300" id="cp-b"></span>
-                </div>
-                <div class="text-xs text-gray-500 mt-1">CP值: <span id="cp-score"></span></div>
-            </div>
-        </section>
-
-        <!-- P5: 社交成分 & 互动 -->
-        <section class="slide" id="slide-4">
-            <h3 class="text-2xl mb-6 font-serif">社交成分分析</h3>
-            
-            <div class="grid grid-cols-2 gap-6 w-full max-w-md">
-                <!-- Coolness -->
-                <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center flex flex-col items-center justify-center aspect-square">
-                    <div class="text-4xl mb-2">😎</div>
-                    <div class="text-sm text-gray-400">高冷指数</div>
-                    <div class="text-3xl font-bold mt-1 text-blue-300" id="cool-score">0</div>
-                    <div class="text-xs text-gray-500 mt-1">被@/回复比: <span id="cool-ratio"></span></div>
-                </div>
-
-                <!-- Topic Killer -->
-                <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center flex flex-col items-center justify-center aspect-square">
-                    <div class="text-4xl mb-2">🧊</div>
-                    <div class="text-sm text-gray-400">话题终结率</div>
-                    <div class="text-3xl font-bold mt-1 text-cyan-300" id="killer-rate">0%</div>
-                    <div class="text-xs text-gray-500 mt-1">终结了 <span id="killer-count"></span> 个话题</div>
-                </div>
-
-                <!-- Meme Ratio -->
-                <div class="col-span-2 bg-white/5 p-4 rounded-2xl border border-white/10 flex items-center justify-between">
-                    <div>
-                        <div class="text-sm text-gray-400">表情包浓度</div>
-                        <div class="text-2xl font-bold text-purple-300"><span id="meme-ratio"></span>%</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-400">复读机行为</div>
-                        <div class="text-2xl font-bold text-green-300"><span id="repeater-count"></span> 次</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- P6: 闪光时刻 -->
-        <section class="slide" id="slide-5">
-            <div class="w-full max-w-lg space-y-6">
-                <h3 class="text-2xl text-center font-serif mb-8">年度闪光时刻</h3>
-                
-                <!-- Longest -->
-                <div class="bubble p-5 relative overflow-hidden">
-                    <div class="text-xs text-yellow-500 font-bold mb-2">📜 最长篇大论</div>
-                    <div class="text-sm leading-relaxed text-gray-300 line-clamp-4 italic" id="long-msg"></div>
-                    <div class="text-xs text-gray-500 mt-2 text-right" id="long-date"></div>
-                </div>
-
-                <!-- Night -->
-                <div class="bubble p-5 relative">
-                    <div class="text-xs text-blue-500 font-bold mb-2">🌙 最晚的夜</div>
-                    <div class="text-xl text-center font-serif my-4" id="night-msg"></div>
-                    <div class="text-xs text-gray-500 text-center">
-                        <span id="night-date"></span> at <span id="night-time"></span>
-                    </div>
-                </div>
-
-                <!-- Repeat -->
-                <div class="bubble p-5 flex justify-between items-center">
-                    <div>
-                        <div class="text-xs text-green-500 font-bold">🦜 年度口头禅</div>
-                        <div class="text-2xl mt-1 font-bold" id="repeat-word"></div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-3xl font-bold opacity-20">x<span id="repeat-count"></span></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- P7: 年度关键词 (核心展示) -->
-        <section class="slide" id="slide-6">
-            <div class="absolute inset-0 z-0 overflow-hidden" id="word-cloud-bg">
-                <!-- Word Cloud Items generated by JS -->
-            </div>
-
-            <div class="relative z-10 text-center w-full">
-                <p class="text-sm tracking-[0.5em] uppercase text-gray-400 mb-4">Keyword of the Year</p>
-                
-                <div class="keyword-main scale-0" id="annual-keyword"></div>
-                
-                <div class="mt-12 h-20 flex flex-col items-center justify-center">
-                    <div class="text-cyan-200 text-lg md:text-xl font-light italic typing-cursor" id="keyword-sentence"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- P8: 人格画像 -->
-        <section class="slide" id="slide-7">
-            <div class="w-full max-w-md text-center">
-                <div class="w-32 h-32 mx-auto rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 p-1 mb-8 disk-rotate">
-                    <img id="persona-avatar" src="" class="w-full h-full rounded-full object-cover">
-                </div>
-
-                <h2 class="text-sm text-gray-400 tracking-widest mb-2">年度群聊人格</h2>
-                <h1 class="text-4xl md:text-5xl font-bold text-white mb-6 font-serif" id="persona-title"></h1>
-                
-                <div class="relative p-6">
-                    <span class="absolute top-0 left-0 text-4xl text-white/20">“</span>
-                    <p class="text-gray-200 leading-relaxed text-justify px-4" id="persona-copy"></p>
-                    <span class="absolute bottom-0 right-0 text-4xl text-white/20">”</span>
-                </div>
-
-                <div class="mt-8 flex flex-wrap justify-center gap-2" id="ai-tags">
-                    <!-- Tags -->
-                </div>
-            </div>
-        </section>
-
-        <!-- P9: AI 寄语 -->
-        <section class="slide" id="slide-8">
-            <div class="max-w-md text-center space-y-8">
-                <div class="text-6xl mb-4">🤖</div>
-                <h3 class="text-xl font-bold text-blue-200">AI 的悄悄话</h3>
-                <div class="bg-gradient-to-b from-blue-900/40 to-black/40 p-6 rounded-xl border border-blue-500/30">
-                    <p class="text-lg text-white mb-6 font-serif" id="ai-oneliner"></p>
-                    <div class="h-px w-full bg-white/10 mb-6"></div>
-                    <ul class="text-sm text-gray-400 text-left space-y-3 list-disc pl-4" id="ai-tips">
-                        <!-- Tips -->
-                    </ul>
-                </div>
-                
-                <button onclick="location.reload()" class="mt-12 px-8 py-3 bg-white/10 hover:bg-white/20 rounded-full text-sm transition border border-white/20">
-                    再看一遍
-                </button>
-            </div>
-        </section>
-
+    <!-- UI 元素 -->
+    <div class="music-icon">
+        <i class="fas fa-music text-xs text-white"></i>
+    </div>
+    <div class="swipe-hint text-white text-opacity-50 text-sm flex flex-col items-center">
+        <span>上滑查看</span>
+        <i class="fas fa-chevron-up mt-1"></i>
     </div>
 
-<script>
-    // --- 1. 数据注入 (来自 Prompt) ---
-    const rawData = {
-      "schema": "group_persona_report.v2",
-      "generatedAt": 1766051892,
-      "range": {
-        "start": "2025-11-10 00:00:00",
-        "end": "2025-12-17 00:00:00"
-      },
-      "target": {
-        "userId": "845245653",
-        "nickname": "HJTY",
-        "avatar": {
-          "url": "http://q.qlogo.cn/g?b=qq&nk=845245653&s=640"
-        }
-      },
-      "stats": {
-        "messageCount": 653,
-        "activeDays": 23,
-        "time": {
-          "worktimeRatio": 51,
-          "nightOwlCount": 29,
-          "standbySpanSeconds": 1951122,
-          "earliestMessageTs": 1763949612,
-          "latestMessageTs": 1765900734
-        },
-        "interaction": {
-          "beMentionedCount": 39,
-          "beRepliedCount": 63,
-          "replyOthersCount": 32,
-          "coolness": {
-            "score": 37,
-            "beMentionedVsReplyRatio": 1.22
+    <!-- 主内容 -->
+    <div class="swiper mySwiper">
+        <div class="swiper-wrapper" id="report-container">
+            <!-- Slides will be injected by JS -->
+        </div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <script>
+        // 数据源
+        const reportData = {
+          "schema": "group_persona_report.v2",
+          "generatedAt": 1766051892,
+          "range": { "start": "2025-11-10", "end": "2025-12-17" },
+          "target": {
+            "groupId": "972329244",
+            "userId": "845245653",
+            "nickname": "HJTY",
+            "avatar": { "url": "http://q.qlogo.cn/g?b=qq&nk=845245653&s=640" }
           },
-          "supporterScore": 32,
-          "coldTopicCount": 106,
-          "topicKillerRate": 16
-        },
-        "content": {
-          "avgChars": 13,
-          "memeRatio": 9,
-          "repeaterCount": 17
-        }
-      },
-      "series": {
-        "byHour": [
-          {"hour": 0, "count": 40}, {"hour": 1, "count": 26}, {"hour": 2, "count": 3},
-          {"hour": 3, "count": 0}, {"hour": 4, "count": 0}, {"hour": 5, "count": 0},
-          {"hour": 6, "count": 0}, {"hour": 7, "count": 1}, {"hour": 8, "count": 8},
-          {"hour": 9, "count": 17}, {"hour": 10, "count": 26}, {"hour": 11, "count": 44},
-          {"hour": 12, "count": 63}, {"hour": 13, "count": 71}, {"hour": 14, "count": 43},
-          {"hour": 15, "count": 29}, {"hour": 16, "count": 41}, {"hour": 17, "count": 50},
-          {"hour": 18, "count": 49}, {"hour": 19, "count": 33}, {"hour": 20, "count": 21},
-          {"hour": 21, "count": 45}, {"hour": 22, "count": 17}, {"hour": 23, "count": 26}
-        ]
-      },
-      "rank": {
-        "personaTitle": {
-          "name": "深夜哲学家",
-          "copywriting": "这一年，你总在深夜出没，用平均13个字的短句，点亮了29个夜晚的对话框。\n当世界沉睡，你的思绪却格外清醒，偶尔一句“都不行”，是深夜独有的倔强与思考。"
-        }
-      },
-      "social": {
-        "mostYouCare": { "nickname": "￼", "score": 642, "at": 0, "window": 622 },
-        "mostCareYou": { "nickname": "绿琳", "score": 138, "at": 11, "reply": 18 },
-        "bestCP": { "userA": { "nickname": "HJTY" }, "userB": { "nickname": "LaVI" }, "interactionScore": 13 },
-        "lickDogTarget": { "count": 642 }
-      },
-      "moments": {
-        "mostRepeated": { "text": "？", "count": 6 },
-        "longestMessage": { "chars": 472, "text": "这什么问题： [14:14:41] [Core] [ERRO] [respond.stage:266]: 发送消息链失败...", "ts": 1764051441 },
-        "latestNight": { "date": "2025-12-09", "time": "02:26", "text": "都不行" },
-        "annualKeyword": "时代",
-        "wordCloud": [
-          {"word": "时代", "count": 33}, {"word": "学生", "count": 32}, {"word": "gemini", "count": 19},
-          {"word": "游戏", "count": 15}, {"word": "天赋", "count": 14}, {"word": "抽卡", "count": 14},
-          {"word": "魔法", "count": 14}, {"word": "少女", "count": 14}, {"word": "魔女", "count": 14},
-          {"word": "审判", "count": 14}, {"word": "现在", "count": 13}, {"word": "然后", "count": 11}
-        ],
-        "keywordRepresentations": [
-          "要变成学生时代了吗",
-          "我们这里不是学生时代.jpg",
-          "还真是学生时代"
-        ]
-      },
-      "ai": {
-        "keywords": ["深夜哲学家", "话题终结者", "群聊复读机"],
-        "oneLiner": "在深夜的群聊里，你是那个用短句点亮对话的哲学家。",
-        "tips": [
-          "偶尔也试试在白天冒泡，让阳光晒晒你的‘深夜哲学’吧。",
-          "你终结了16%的话题，下次或许可以试着当一个‘话题启动器’？"
-        ]
-      }
-    };
-
-    // --- 2. 工具函数 ---
-    const formatTime = (ts) => {
-        const date = new Date(ts * 1000);
-        return `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-    };
-    const formatDate = (ts) => {
-        const date = new Date(ts * 1000);
-        return `${date.getMonth()+1}月${date.getDate()}日`;
-    };
-
-    // --- 3. 页面渲染逻辑 ---
-    function initReport() {
-        // P1
-        document.getElementById('user-avatar').src = rawData.target.avatar.url;
-        document.getElementById('user-name').innerText = rawData.target.nickname;
-        document.getElementById('persona-avatar').src = rawData.target.avatar.url;
-
-        // P2 Stats
-        document.getElementById('msg-count').innerText = rawData.stats.messageCount;
-        document.getElementById('avg-chars').innerText = rawData.stats.content.avgChars;
-        document.getElementById('active-days').innerText = rawData.stats.activeDays + ' 天';
-        document.getElementById('standby-hours').innerText = Math.round(rawData.stats.time.standbySpanSeconds / 3600) + ' 小时';
-        
-        let timeComment = "";
-        if(rawData.stats.time.nightOwlCount > 10) timeComment = "越夜越精神，说的就是你吧？";
-        else timeComment = "作息规律，你是群里的健康担当。";
-        document.getElementById('time-comment').innerText = timeComment;
-
-        // P3 Chart Data Prep
-        const hours = rawData.series.byHour.map(h => h.hour);
-        const counts = rawData.series.byHour.map(h => h.count);
-        const maxCount = Math.max(...counts);
-        const peakHour = hours[counts.indexOf(maxCount)];
-        
-        document.getElementById('peak-hour').innerText = peakHour;
-        document.getElementById('owl-type').innerText = peakHour >= 22 || peakHour <= 4 ? "深夜党" : "日光族";
-        document.getElementById('earliest-msg-time').innerText = formatTime(rawData.stats.time.earliestMessageTs);
-        document.getElementById('latest-msg-time').innerText = formatTime(rawData.stats.time.latestMessageTs);
-
-        // ChartJS Rendering
-        const ctx = document.getElementById('hourChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: hours.map(h => h),
-                datasets: [{
-                    label: '发言数',
-                    data: counts,
-                    borderColor: 'rgba(103, 232, 249, 0.8)',
-                    backgroundColor: 'rgba(103, 232, 249, 0.2)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0
-                }]
+          "stats": {
+            "messageCount": 653,
+            "activeDays": 23,
+            "time": {
+              "worktimeRatio": 51,
+              "nightOwlCount": 29,
+              "latestMessageTs": 1765900734,
+              "earliestMessageTs": 1763949612
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { display: false },
-                    y: { display: false }
-                }
+            "interaction": {
+              "coolness": { "score": 37 },
+              "topicKillerRate": 16,
+              "coldTopicCount": 106
+            },
+            "content": {
+              "avgChars": 13,
+              "memeRatio": 9,
+              "imageCount": 56,
+              "questionMarkCount": 54
             }
-        });
+          },
+          "series": {
+             "byHour": [
+                {"hour": 0,"count": 40},{"hour": 1,"count": 26},{"hour": 2,"count": 3},{"hour": 3,"count": 0},{"hour": 4,"count": 0},{"hour": 5,"count": 0},
+                {"hour": 6,"count": 0},{"hour": 7,"count": 1},{"hour": 8,"count": 8},{"hour": 9,"count": 17},{"hour": 10,"count": 26},{"hour": 11,"count": 44},
+                {"hour": 12,"count": 63},{"hour": 13,"count": 71},{"hour": 14,"count": 43},{"hour": 15,"count": 29},{"hour": 16,"count": 41},{"hour": 17,"count": 50},
+                {"hour": 18,"count": 49},{"hour": 19,"count": 33},{"hour": 20,"count": 21},{"hour": 21,"count": 45},{"hour": 22,"count": 17},{"hour": 23,"count": 26}
+             ]
+          },
+          "rank": {
+            "personaTitle": {
+              "name": "深夜哲学家",
+              "copywriting": "这一年，你总在深夜出没，用平均13个字的短句，点亮了29个夜晚的对话框。\n当世界沉睡，你的思绪却格外清醒，偶尔一句“都不行”，是深夜独有的倔强与思考。"
+            }
+          },
+          "social": {
+            "mostCareYou": { "nickname": "绿琳", "score": 138 },
+            "bestCP": { 
+                "userB": { "nickname": "LaVI" }, 
+                "interactionScore": 13 
+            },
+            "lickDogTarget": { "nickname": "￼", "count": 642 } // Using specific funny data point
+          },
+          "moments": {
+            "latestNight": { "time": "02:26", "text": "都不行", "date": "2025-12-09" },
+            "annualKeyword": "时代",
+            "wordCloud": [
+               {"word": "时代", "count": 33}, {"word": "获得最佳", "count": 33}, {"word": "jpg", "count": 32},
+               {"word": "学生", "count": 32}, {"word": "抽卡", "count": 14}, {"word": "魔法", "count": 14},
+               {"word": "审判", "count": 14}, {"word": "重开", "count": 9}
+            ],
+            "keywordRepresentations": [
+               "要变成学生时代了吗",
+               "我们这里不是学生时代.jpg",
+               "还真是学生时代"
+            ]
+          },
+          "ai": {
+             "sentiment": "emo",
+             "oneLiner": "在深夜的群聊里，你是那个用短句点亮对话的哲学家。"
+          }
+        };
 
-        // P4 Social
-        const mostCare = rawData.social.mostYouCare;
-        document.getElementById('care-name').innerText = mostCare.nickname || "未知";
-        document.getElementById('care-score').innerText = mostCare.score;
-        document.getElementById('care-at').innerText = mostCare.at;
-        document.getElementById('care-window').innerText = mostCare.window;
+        // 辅助函数：将时间戳转日期
+        const formatDate = (ts) => new Date(ts * 1000).toLocaleDateString();
 
-        const fans = rawData.social.mostCareYou;
-        document.getElementById('fans-name').innerText = fans.nickname;
-        document.getElementById('fans-score').innerText = fans.score;
-        document.getElementById('fans-reply').innerText = fans.reply;
-        document.getElementById('fans-at').innerText = fans.at;
+        // 渲染函数
+        function renderSlides() {
+            const container = document.getElementById('report-container');
+            const { target, stats, rank, moments, social, series, ai } = reportData;
 
-        document.getElementById('cp-a').innerText = rawData.social.bestCP.userA.nickname;
-        document.getElementById('cp-b').innerText = rawData.social.bestCP.userB.nickname;
-        document.getElementById('cp-score').innerText = rawData.social.bestCP.interactionScore;
+            // 1. 封面页
+            const slide1 = `
+                <div class="swiper-slide">
+                    <div class="relative w-24 h-24 mb-6 animate__animated animate__zoomIn">
+                        <img src="${target.avatar.url}" class="w-full h-full rounded-full border-2 border-white avatar-glow object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${target.nickname}'">
+                        <div class="absolute -bottom-2 -right-2 bg-purple-600 text-xs px-2 py-1 rounded-full border border-white">
+                            ${target.nickname}
+                        </div>
+                    </div>
+                    <h1 class="text-3xl font-bold mb-2 animate__animated animate__fadeInUp animate__delay-1s">2025</h1>
+                    <h2 class="text-xl font-light text-purple-200 tracking-widest animate__animated animate__fadeInUp animate__delay-1s">群聊年度报告</h2>
+                    <p class="mt-8 text-sm text-gray-400 animate__animated animate__fadeIn animate__delay-2s">这里记录了你独特的频率</p>
+                </div>
+            `;
 
-        // P5 Analysis
-        document.getElementById('cool-score').innerText = rawData.stats.interaction.coolness.score;
-        document.getElementById('cool-ratio').innerText = rawData.stats.interaction.coolness.beMentionedVsReplyRatio;
-        document.getElementById('killer-rate').innerText = rawData.stats.interaction.topicKillerRate + '%';
-        document.getElementById('killer-count').innerText = rawData.stats.interaction.coldTopicCount;
-        document.getElementById('meme-ratio').innerText = rawData.stats.content.memeRatio;
-        document.getElementById('repeater-count').innerText = rawData.stats.content.repeaterCount;
+            // 2. 基础数据
+            const slide2 = `
+                <div class="swiper-slide">
+                    <div class="glass-card animate__animated animate__fadeInUp">
+                        <div class="mb-6">
+                            <p class="text-sm text-gray-300 mb-1">在这个群里</p>
+                            <p class="text-lg">你一共活跃了 <span class="highlight-num text-3xl">${stats.activeDays}</span> 天</p>
+                        </div>
+                        <div class="mb-6">
+                            <p class="text-sm text-gray-300 mb-1">发送了</p>
+                            <p class="text-lg"><span class="highlight-num text-3xl">${stats.messageCount}</span> 条消息</p>
+                            <p class="text-xs text-gray-400 mt-2">包含 ${stats.content.imageCount} 张图片，${stats.content.questionMarkCount} 个问号</p>
+                        </div>
+                        <div class="border-t border-white/10 pt-4 mt-4">
+                            <p class="text-sm italic text-purple-200">
+                                "${stats.content.avgChars} 个字的短句，是你一贯的风格"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
 
-        // P6 Moments
-        document.getElementById('long-msg').innerText = rawData.moments.longestMessage.text;
-        document.getElementById('long-date').innerText = formatDate(rawData.moments.longestMessage.ts);
-        
-        document.getElementById('night-msg').innerText = rawData.moments.latestNight.text;
-        document.getElementById('night-date').innerText = rawData.moments.latestNight.date;
-        document.getElementById('night-time').innerText = rawData.moments.latestNight.time;
+            // 3. 时间分布 (深夜哲学家)
+            let hourBars = '';
+            series.byHour.forEach(h => {
+                let height = Math.max(5, (h.count / 71) * 100); // Normalize to max
+                hourBars += `<div class="bar" style="height: ${height}%;"></div>`;
+            });
 
-        document.getElementById('repeat-word').innerText = rawData.moments.mostRepeated.text;
-        document.getElementById('repeat-count').innerText = rawData.moments.mostRepeated.count;
+            const slide3 = `
+                <div class="swiper-slide">
+                    <h3 class="text-2xl font-bold mb-6 text-yellow-300 animate__animated animate__fadeInDown">
+                        <i class="fas fa-moon mr-2"></i>夜猫子认证
+                    </h3>
+                    <div class="glass-card animate__animated animate__fadeIn">
+                        <p class="mb-4">你在深夜活跃了 <span class="text-yellow-400 font-bold">${stats.time.nightOwlCount}</span> 次</p>
+                        <div class="bg-black/30 p-4 rounded-lg mb-4">
+                            <p class="text-xs text-gray-400 mb-2">那天 ${moments.latestNight.time}，你还在说：</p>
+                            <p class="text-lg font-serif">"${moments.latestNight.text}"</p>
+                            <p class="text-right text-xs text-gray-500 mt-1">${moments.latestNight.date}</p>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-2">24小时活跃分布</p>
+                        <div class="bar-container">
+                            ${hourBars}
+                        </div>
+                    </div>
+                </div>
+            `;
 
-        // P7 Keywords
-        document.getElementById('annual-keyword').innerText = rawData.moments.annualKeyword;
-        
-        // P8 Persona
-        document.getElementById('persona-title').innerText = rawData.rank.personaTitle.name;
-        document.getElementById('persona-copy').innerText = rawData.rank.personaTitle.copywriting;
-        const tagsContainer = document.getElementById('ai-tags');
-        rawData.ai.keywords.forEach(tag => {
-            const span = document.createElement('span');
-            span.className = "px-3 py-1 bg-blue-500/20 rounded-full text-xs text-blue-200 border border-blue-500/30";
-            span.innerText = "#" + tag;
-            tagsContainer.appendChild(span);
-        });
+            // 4. 社交关系
+            const slide4 = `
+                <div class="swiper-slide">
+                    <h3 class="text-xl mb-8 tracking-widest animate__animated animate__fadeInDown">社交羁绊</h3>
+                    
+                    <div class="relative w-full max-w-xs h-64">
+                        <!-- Best CP -->
+                        <div class="absolute top-0 left-0 animate__animated animate__fadeInLeft">
+                            <div class="glass-card p-3" style="width: 160px;">
+                                <div class="text-pink-400 text-xs mb-1"><i class="fas fa-heart"></i> 最佳CP</div>
+                                <div class="font-bold text-lg">${social.bestCP.userB.nickname}</div>
+                                <div class="text-xs text-gray-400">默契度 ${social.bestCP.interactionScore}</div>
+                            </div>
+                        </div>
 
-        // P9 AI
-        document.getElementById('ai-oneliner').innerText = rawData.ai.oneLiner;
-        const tipsContainer = document.getElementById('ai-tips');
-        rawData.ai.tips.forEach(tip => {
-            const li = document.createElement('li');
-            li.innerText = tip;
-            tipsContainer.appendChild(li);
-        });
-    }
+                        <!-- Care You -->
+                        <div class="absolute bottom-0 right-0 animate__animated animate__fadeInRight animate__delay-1s">
+                            <div class="glass-card p-3" style="width: 160px; border-color: #34d399;">
+                                <div class="text-green-400 text-xs mb-1"><i class="fas fa-seedling"></i> 最关注你</div>
+                                <div class="font-bold text-lg">${social.mostCareYou.nickname}</div>
+                                <div class="text-xs text-gray-400">互动分 ${social.mostCareYou.score}</div>
+                            </div>
+                        </div>
 
-    // --- 4. 词云逻辑 ---
-    function renderWordCloud() {
-        const container = document.getElementById('word-cloud-bg');
-        container.innerHTML = '';
-        rawData.moments.wordCloud.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'word-cloud-item';
-            el.innerText = item.word;
-            // 随机大小根据 count 调整 (12px - 30px)
-            const size = Math.min(30, Math.max(12, item.count)); 
-            el.style.fontSize = size + 'px';
-            // 随机位置
-            el.style.top = Math.random() * 80 + 10 + '%';
-            el.style.left = Math.random() * 80 + 10 + '%';
-            // 随机透明度
-            el.style.opacity = Math.random() * 0.5 + 0.1;
-            container.appendChild(el);
-            
-            // 简单浮动动画
-            anime({
-                targets: el,
-                translateY: [0, Math.random() * 50 - 25],
-                translateX: [0, Math.random() * 50 - 25],
-                duration: 3000 + Math.random() * 2000,
-                direction: 'alternate',
-                loop: true,
-                easing: 'easeInOutSine'
+                        <!-- Special / Lick Dog -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate__animated animate__zoomIn animate__delay-2s">
+                            <div class="text-center">
+                                <div class="text-4xl mb-1">🔗</div>
+                                <div class="text-xs text-gray-400">单向连接</div>
+                                <div class="font-bold">${social.lickDogTarget.nickname}</div>
+                                <div class="text-xs text-gray-500">缘分值 ${social.lickDogTarget.count}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 5. 关键词与回响 (High Priority Requirement)
+            let keywordsHtml = moments.wordCloud.slice(0, 8).map(w => 
+                `<span class="keyword-item" style="font-size: ${Math.max(12, Math.min(24, w.count))}px; opacity: ${0.5 + Math.random()*0.5}">${w.word}</span>`
+            ).join('');
+
+            let representationsHtml = moments.keywordRepresentations.map((text, index) => 
+                `<div class="mb-6 animate__animated animate__fadeInUp" style="animation-delay: ${0.5 + index * 1.5}s">
+                    <div class="text-2xl text-white/90 echo-text font-light text-center">“ ${text} ”</div>
+                </div>`
+            ).join('');
+
+            const slide5 = `
+                <div class="swiper-slide">
+                    <div class="absolute top-10 w-full px-6 flex flex-wrap justify-center opacity-30 pointer-events-none">
+                        ${keywordsHtml}
+                    </div>
+
+                    <div class="z-10 w-full px-4">
+                        <div class="text-center mb-10">
+                            <span class="bg-gradient-to-r from-cyan-500 to-blue-500 text-xs px-2 py-1 rounded">年度关键词</span>
+                            <h2 class="text-4xl font-bold mt-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-white drop-shadow-lg animate__animated animate__pulse animate__infinite">
+                                ${moments.annualKeyword}
+                            </h2>
+                        </div>
+
+                        <div class="space-y-4">
+                            <p class="text-xs text-center text-gray-400 mb-6">—— 年度回响 ——</p>
+                            ${representationsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 6. 人设总结
+            const slide6 = `
+                <div class="swiper-slide">
+                    <div class="relative w-full max-w-md p-1">
+                        <!-- 金色边框特效 -->
+                        <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 via-purple-500 to-blue-500 rounded-2xl blur opacity-75 animate-pulse"></div>
+                        
+                        <div class="relative bg-gray-900 rounded-2xl p-6 h-full border border-gray-700">
+                            <div class="text-center mb-6">
+                                <div class="inline-block p-1 rounded-full border-2 border-yellow-500 mb-4">
+                                    <img src="${target.avatar.url}" class="w-16 h-16 rounded-full" onerror="this.src='https://ui-avatars.com/api/?name=H'">
+                                </div>
+                                <h2 class="text-2xl font-bold text-white mb-1">${rank.personaTitle.name}</h2>
+                                <p class="text-xs text-gray-400">ID: ${rank.personaTitle.id}</p>
+                            </div>
+                            
+                            <div class="text-sm text-gray-300 leading-relaxed mb-6 text-justify">
+                                ${rank.personaTitle.copywriting.replace(/\n/g, '<br/><br/>')}
+                            </div>
+
+                            <div class="bg-white/5 rounded p-3 text-xs text-center text-gray-400">
+                                "${ai.oneLiner}"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+             // 7. 结语
+             const slide7 = `
+                <div class="swiper-slide">
+                     <h2 class="text-2xl font-light mb-4">2026</h2>
+                     <p class="text-sm text-gray-400 mb-8">愿你继续保持独特，兴致盎然</p>
+                     
+                     <button class="bg-white text-black px-8 py-2 rounded-full font-bold animate__animated animate__pulse animate__infinite" onclick="location.reload()">
+                        再看一遍
+                     </button>
+                     <p class="absolute bottom-4 text-[10px] text-gray-600">Generated at ${formatDate(reportData.generatedAt)}</p>
+                </div>
+            `;
+
+            container.innerHTML = slide1 + slide2 + slide3 + slide4 + slide5 + slide6 + slide7;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSlides();
+
+            const swiper = new Swiper('.mySwiper', {
+                direction: 'vertical',
+                speed: 600,
+                mousewheel: true,
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                on: {
+                    slideChangeTransitionStart: function () {
+                        // 重置动画：移除所有带有 animate__animated 的类的动画状态，强制重绘
+                        const activeSlide = this.slides[this.activeIndex];
+                        const animatedElements = activeSlide.querySelectorAll('.animate__animated');
+                        
+                        animatedElements.forEach(el => {
+                            el.style.display = 'none';
+                            el.offsetHeight; // trigger reflow
+                            el.style.display = '';
+                        });
+                    }
+                }
             });
         });
-    }
-
-    // --- 5. 关键词打字机动画 ---
-    let typeInterval;
-    function playKeywordAnimation() {
-        // 先放大关键词
-        anime({
-            targets: '#annual-keyword',
-            scale: [0, 1],
-            opacity: [0, 1],
-            duration: 1500,
-            easing: 'easeOutElastic(1, .8)'
-        });
-
-        // 打字机播放 Keyword Representations
-        const sentences = rawData.moments.keywordRepresentations;
-        const target = document.getElementById('keyword-sentence');
-        let sentenceIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-        
-        if(typeInterval) clearInterval(typeInterval);
-
-        typeInterval = setInterval(() => {
-            const currentSentence = sentences[sentenceIndex];
-            
-            if (!isDeleting) {
-                target.innerText = currentSentence.substring(0, charIndex + 1);
-                charIndex++;
-                if (charIndex === currentSentence.length) {
-                    isDeleting = true;
-                    // 停顿一会
-                    clearInterval(typeInterval);
-                    setTimeout(() => {
-                        typeInterval = setInterval(typeLoop, 50); // 删除速度快点
-                    }, 2000); 
-                    return; 
-                }
-            } else {
-                target.innerText = currentSentence.substring(0, charIndex - 1);
-                charIndex--;
-                if (charIndex === 0) {
-                    isDeleting = false;
-                    sentenceIndex = (sentenceIndex + 1) % sentences.length;
-                }
-            }
-        }, 150);
-
-        // 为了能够在setTimeout里重新赋值interval，提取逻辑
-        const typeLoop = () => {
-             // 上面逻辑的简化版副本，用于resume
-             const currentSentence = sentences[sentenceIndex];
-             if(isDeleting) {
-                target.innerText = currentSentence.substring(0, charIndex - 1);
-                charIndex--;
-                if(charIndex === 0) {
-                    isDeleting = false;
-                    sentenceIndex = (sentenceIndex + 1) % sentences.length;
-                    clearInterval(typeInterval);
-                    typeInterval = setInterval(typeLoop, 150); // 恢复打字速度
-                }
-             } else {
-                 target.innerText = currentSentence.substring(0, charIndex + 1);
-                 charIndex++;
-                 if (charIndex === currentSentence.length) {
-                     isDeleting = true;
-                     clearInterval(typeInterval);
-                     setTimeout(() => {
-                         typeInterval = setInterval(typeLoop, 50);
-                     }, 2000);
-                 }
-             }
-        }
-        
-        // 初始启动
-        if(typeInterval) clearInterval(typeInterval);
-        typeInterval = setInterval(typeLoop, 150);
-    }
-
-    // --- 6. 全屏滚动逻辑 ---
-    let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-    const totalSlides = slides.length;
-    let isScrolling = false;
-
-    // 触摸处理
-    let startY = 0;
-
-    function goToSlide(index) {
-        if (index < 0 || index >= totalSlides) return;
-        isScrolling = true;
-        
-        // 移动容器
-        document.getElementById('swiper').style.transform = `translateY(-${index * 100}vh)`;
-        
-        // 处理 Active Class
-        slides.forEach(s => s.classList.remove('active'));
-        slides[index].classList.add('active');
-
-        // 最后一页隐藏箭头
-        if(index === totalSlides - 1) document.getElementById('arrow').style.display = 'none';
-        else document.getElementById('arrow').style.display = 'block';
-
-        currentSlide = index;
-
-        // 特殊页面的触发逻辑
-        if (index === 6) { // 关键词页面
-            renderWordCloud();
-            playKeywordAnimation();
-        }
-
-        setTimeout(() => { isScrolling = false; }, 800);
-    }
-
-    window.addEventListener('wheel', (e) => {
-        if (isScrolling) return;
-        if (e.deltaY > 0) goToSlide(currentSlide + 1);
-        else goToSlide(currentSlide - 1);
-    });
-
-    window.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-    });
-
-    window.addEventListener('touchend', (e) => {
-        if (isScrolling) return;
-        const endY = e.changedTouches[0].clientY;
-        if (startY - endY > 50) goToSlide(currentSlide + 1); // 上滑
-        if (endY - startY > 50) goToSlide(currentSlide - 1); // 下滑
-    });
-
-    // --- 7. 背景星星生成 ---
-    function createStars() {
-        const container = document.getElementById('stars-container');
-        for(let i=0; i<50; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.width = Math.random() * 3 + 'px';
-            star.style.height = star.style.width;
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
-            container.appendChild(star);
-        }
-    }
-
-    // --- 初始化 ---
-    window.onload = () => {
-        initReport();
-        createStars();
-    };
-
-</script>
+    </script>
 </body>
 </html>
