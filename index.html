@@ -64,10 +64,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 2rem;
+            padding: 1.5rem; /* Reduced padding slightly */
             box-sizing: border-box;
-            opacity: 0; /* 初始隐藏，由动画控制显示 */
+            opacity: 0; 
             transition: opacity 0.5s;
+            position: relative;
+            overflow: hidden;
         }
         
         .swiper-slide-active {
@@ -85,7 +87,34 @@
             width: 100%;
             max-width: 360px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            z-index: 10;
         }
+
+        /* 增强的互动列表样式 */
+        .interaction-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .interaction-item:last-child { border-bottom: none; }
+        
+        .interaction-bar-container {
+            flex: 1;
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .interaction-bar {
+            height: 4px;
+            border-radius: 2px;
+            position: relative;
+        }
+        /* 我对TA (Blue) */
+        .bar-out { background: rgba(59, 130, 246, 0.6); }
+        /* TA对我 (Pink) */
+        .bar-in { background: rgba(236, 72, 153, 0.6); }
 
         /* 头像光晕 */
         .avatar-glow {
@@ -128,54 +157,69 @@
             opacity: 0.7;
         }
 
-        /* 关键词样式 */
-        .keyword-item {
-            display: inline-block;
-            margin: 5px;
-            padding: 5px 12px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.1);
-            font-size: 14px;
+        /* 浮动词云样式 */
+        .floating-word {
+            position: absolute;
+            white-space: nowrap;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 5px rgba(255,255,255,0.2);
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none; /* 让鼠标穿透，不影响交互 */
+            z-index: 0;
         }
 
-        /* 柱状图样式 */
-        .bar-container {
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* 柱状图样式 (基础) */
+        .chart-container {
             display: flex;
             align-items: flex-end;
             justify-content: space-between;
-            height: 100px;
             width: 100%;
-            margin-top: 20px;
-        }
-        .bar {
-            width: 3%;
-            background: linear-gradient(to top, #4f46e5, #ec4899);
-            border-radius: 2px;
-            opacity: 0.7;
-        }
-
-        /* 引用语样式 */
-        .quote-bg {
             position: relative;
         }
-        .quote-bg::before {
-            content: '"';
+        
+        .bar-label {
             position: absolute;
-            top: -20px;
-            left: -10px;
-            font-size: 60px;
-            color: rgba(255,255,255,0.1);
-            font-family: serif;
+            bottom: -20px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.5);
+            transform: translateX(-50%);
+            white-space: nowrap;
         }
 
-        /* 闪烁文字 */
-        .typing-effect {
-            border-right: 2px solid rgba(255,255,255,0.7);
-            white-space: nowrap;
-            overflow: hidden;
-            animation: blink-caret .75s step-end infinite;
+        /* 月度图表特有样式 */
+        .month-bar {
+            width: 12%; /* Approximate for ~6-8 bars displayed */
+            background: linear-gradient(to top, #3b82f6, #06b6d4);
+            border-radius: 4px 4px 0 0;
+            opacity: 0.8;
+            transition: height 1s ease-out;
+            position: relative;
         }
-        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: rgba(255,255,255,0.7); } }
+        .month-bar span {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .month-bar:hover span { opacity: 1; }
+
+        /* 24小时图表特有样式 */
+        .hour-bar {
+            width: 2.5%;
+            background: linear-gradient(to top, #4f46e5, #ec4899);
+            border-radius: 2px 2px 0 0;
+            opacity: 0.8;
+            transition: height 1s ease-out;
+        }
 
         /* 重点数字高亮 */
         .highlight-num {
@@ -185,13 +229,28 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: bold;
+            display: inline-block; /* For transform/animation */
+        }
+
+        .comment-box {
+            background: rgba(255,255,255,0.1);
+            border-left: 3px solid #fbbf24;
+            padding: 8px 12px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #ddd;
+            border-radius: 0 4px 4px 0;
+            font-style: italic;
         }
         
         /* 针对 Keyword Representations 的特殊样式 */
         .echo-text {
-            font-family: 'Songti SC', serif;
-            line-height: 1.8;
+            font-family: 'Songti SC', 'SimSun', serif;
+            line-height: 1.6;
             text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -224,79 +283,147 @@
         // 数据源
         const reportData = {
           "schema": "group_persona_report.v2",
-          "generatedAt": 1766051892,
-          "range": { "start": "2025-11-10", "end": "2025-12-17" },
+          "generatedAt": 1766053844,
+          "range": {
+            "startTs": 1735660800,
+            "endTs": 1767110400,
+            "start": "2025-01-01 00:00:00",
+            "end": "2025-12-31 00:00:00"
+          },
           "target": {
             "groupId": "972329244",
             "userId": "845245653",
             "nickname": "HJTY",
-            "avatar": { "url": "http://q.qlogo.cn/g?b=qq&nk=845245653&s=640" }
+            "avatar": {
+              "url": "http://q.qlogo.cn/g?b=qq&nk=845245653&s=640"
+            }
           },
           "stats": {
-            "messageCount": 653,
-            "activeDays": 23,
+            "messageCount": 723,
+            "activeDays": 25,
             "time": {
-              "worktimeRatio": 51,
+              "worktimeRatio": 53,
               "nightOwlCount": 29,
-              "latestMessageTs": 1765900734,
+              "earlyBirdWins": 2,
+              "standbySpanSeconds": 2084174,
+              "latestMessageTs": 1766033786,
               "earliestMessageTs": 1763949612
             },
             "interaction": {
-              "coolness": { "score": 37 },
-              "topicKillerRate": 16,
-              "coldTopicCount": 106
+              "beMentionedCount": 39,
+              "beRepliedCount": 67,
+              "replyOthersCount": 32,
+              "coolness": {
+                "score": 37,
+                "beMentionedVsReplyRatio": 1.22
+              },
+              "supporterScore": 32,
+              "coldTopicCount": 118,
+              "topicKillerRate": 16
             },
             "content": {
-              "avgChars": 13,
+              "textCount": 656,
+              "imageCount": 67,
+              "faceCount": 0,
+              "replyCount": 7,
+              "avgChars": 12,
+              "longTextRatio": 2,
               "memeRatio": 9,
-              "imageCount": 56,
-              "questionMarkCount": 54
+              "repeaterCount": 17,
+              "hahaCount": 1,
+              "questionMarkCount": 59
             }
           },
           "series": {
-             "byHour": [
-                {"hour": 0,"count": 40},{"hour": 1,"count": 26},{"hour": 2,"count": 3},{"hour": 3,"count": 0},{"hour": 4,"count": 0},{"hour": 5,"count": 0},
-                {"hour": 6,"count": 0},{"hour": 7,"count": 1},{"hour": 8,"count": 8},{"hour": 9,"count": 17},{"hour": 10,"count": 26},{"hour": 11,"count": 44},
-                {"hour": 12,"count": 63},{"hour": 13,"count": 71},{"hour": 14,"count": 43},{"hour": 15,"count": 29},{"hour": 16,"count": 41},{"hour": 17,"count": 50},
-                {"hour": 18,"count": 49},{"hour": 19,"count": 33},{"hour": 20,"count": 21},{"hour": 21,"count": 45},{"hour": 22,"count": 17},{"hour": 23,"count": 26}
-             ]
+            "byDay": [
+              { "day": "2025-11-24", "count": 107 }, { "day": "2025-11-25", "count": 72 }, { "day": "2025-11-26", "count": 48 }, { "day": "2025-11-27", "count": 31 },
+              { "day": "2025-11-28", "count": 48 }, { "day": "2025-11-29", "count": 22 }, { "day": "2025-11-30", "count": 39 }, { "day": "2025-12-01", "count": 30 },
+              { "day": "2025-12-02", "count": 21 }, { "day": "2025-12-03", "count": 15 }, { "day": "2025-12-04", "count": 26 }, { "day": "2025-12-05", "count": 17 },
+              { "day": "2025-12-06", "count": 10 }, { "day": "2025-12-07", "count": 23 }, { "day": "2025-12-08", "count": 8 }, { "day": "2025-12-09", "count": 15 },
+              { "day": "2025-12-10", "count": 9 }, { "day": "2025-12-11", "count": 11 }, { "day": "2025-12-12", "count": 69 }, { "day": "2025-12-13", "count": 5 },
+              { "day": "2025-12-14", "count": 1 }, { "day": "2025-12-15", "count": 10 }, { "day": "2025-12-16", "count": 16 }, { "day": "2025-12-17", "count": 66 },
+              { "day": "2025-12-18", "count": 4 }
+            ],
+            "byHour": [
+              { "hour": 0, "count": 50 }, { "hour": 1, "count": 26 }, { "hour": 2, "count": 3 }, { "hour": 3, "count": 0 }, { "hour": 4, "count": 0 }, { "hour": 5, "count": 0 },
+              { "hour": 6, "count": 0 }, { "hour": 7, "count": 1 }, { "hour": 8, "count": 11 }, { "hour": 9, "count": 20 }, { "hour": 10, "count": 29 }, { "hour": 11, "count": 49 },
+              { "hour": 12, "count": 71 }, { "hour": 13, "count": 71 }, { "hour": 14, "count": 54 }, { "hour": 15, "count": 32 }, { "hour": 16, "count": 57 }, { "hour": 17, "count": 53 },
+              { "hour": 18, "count": 49 }, { "hour": 19, "count": 33 }, { "hour": 20, "count": 23 }, { "hour": 21, "count": 48 }, { "hour": 22, "count": 17 }, { "hour": 23, "count": 26 }
+            ]
           },
           "rank": {
             "personaTitle": {
+              "id": "night_philosopher",
               "name": "深夜哲学家",
-              "copywriting": "这一年，你总在深夜出没，用平均13个字的短句，点亮了29个夜晚的对话框。\n当世界沉睡，你的思绪却格外清醒，偶尔一句“都不行”，是深夜独有的倔强与思考。"
+              "copywriting": "这一年，你总在深夜出没，用平均12个字的短句，点亮了29个夜晚的群聊。当世界沉睡，你的思绪却格外清醒。"
             }
           },
           "social": {
-            "mostCareYou": { "nickname": "绿琳", "score": 138 },
-            "bestCP": { 
-                "userB": { "nickname": "LaVI" }, 
-                "interactionScore": 13 
+            "mostYouCare": { "nickname": "￼", "score": 689 },
+            "mostCareYou": { "nickname": "绿琳", "score": 150 },
+            "bestCP": {
+              "userB": { "nickname": "LaVI" },
+              "interactionScore": 13
             },
-            "lickDogTarget": { "nickname": "￼", "count": 642 } // Using specific funny data point
+            "lickDogTarget": { "nickname": "￼", "count": 689 },
+            "topInteractions": [
+                { "nickname": "￼", "score": 719, "detail": { "atOut": 0, "replyOut": 5, "atIn": 5, "replyIn": 0 } },
+                { "nickname": "寿司师傅", "score": 510, "detail": { "atOut": 3, "replyOut": 6, "atIn": 7, "replyIn": 8 } },
+                { "nickname": "叶姑娘", "score": 382, "detail": { "atOut": 0, "replyOut": 0, "atIn": 0, "replyIn": 25 } },
+                { "nickname": "绿琳", "score": 312, "detail": { "atOut": 0, "replyOut": 6, "atIn": 11, "replyIn": 21 } },
+                { "nickname": "LaVI", "score": 310, "detail": { "atOut": 13, "replyOut": 12, "atIn": 14, "replyIn": 0 } }
+            ]
           },
           "moments": {
-            "latestNight": { "time": "02:26", "text": "都不行", "date": "2025-12-09" },
+            "mostRepeated": { "text": "？", "count": 6 },
+            "latestNight": { "date": "2025-12-09", "time": "02:26", "text": "都不行" },
             "annualKeyword": "时代",
             "wordCloud": [
-               {"word": "时代", "count": 33}, {"word": "获得最佳", "count": 33}, {"word": "jpg", "count": 32},
-               {"word": "学生", "count": 32}, {"word": "抽卡", "count": 14}, {"word": "魔法", "count": 14},
-               {"word": "审判", "count": 14}, {"word": "重开", "count": 9}
+              { "word": "时代", "count": 34 }, { "word": "学生", "count": 33 }, { "word": "获得最佳", "count": 33 }, { "word": "jpg", "count": 32 },
+              { "word": "gemini", "count": 20 }, { "word": "游戏", "count": 16 }, { "word": "天赋", "count": 14 }, { "word": "抽卡", "count": 14 },
+              { "word": "现在", "count": 14 }, { "word": "知道", "count": 14 }, { "word": "魔法", "count": 14 }, { "word": "少女", "count": 14 },
+              { "word": "魔女", "count": 14 }, { "word": "审判", "count": 14 }, { "word": "自己", "count": 12 }, { "word": "还是", "count": 12 },
+              { "word": "然后", "count": 11 }, { "word": "问题", "count": 11 }, { "word": "只能", "count": 10 }, { "word": "这样", "count": 10 }
             ],
             "keywordRepresentations": [
-               "要变成学生时代了吗",
-               "我们这里不是学生时代.jpg",
-               "还真是学生时代"
+              "要变成学生时代了吗",
+              "我们这里不是学生时代.jpg",
+              "还真是学生时代"
             ]
           },
           "ai": {
-             "sentiment": "emo",
-             "oneLiner": "在深夜的群聊里，你是那个用短句点亮对话的哲学家。"
+            "oneLiner": "在深夜的群聊里，你定义了属于自己的“时代”。"
           }
         };
 
-        // 辅助函数：将时间戳转日期
+        // 辅助函数
         const formatDate = (ts) => new Date(ts * 1000).toLocaleDateString();
+        
+        // 动画函数
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // 触发 Slide 内的所有计数器动画
+        function triggerCounters(slideElement) {
+            const counters = slideElement.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                if (!isNaN(target)) {
+                    animateValue(counter, 0, target, 1500);
+                    counter.classList.remove('counter'); // 避免重复触发
+                }
+            });
+        }
 
         // 渲染函数
         function renderSlides() {
@@ -318,119 +445,274 @@
                 </div>
             `;
 
-            // 2. 基础数据
+            // 处理月度数据
+            const monthlyData = {};
+            let maxMonthCount = 0;
+            let maxMonthName = "";
+            
+            series.byDay.forEach(d => {
+                const date = new Date(d.day);
+                const month = date.getMonth() + 1; // 1-12
+                const monthKey = `${month}月`;
+                if (!monthlyData[monthKey]) monthlyData[monthKey] = 0;
+                monthlyData[monthKey] += d.count;
+            });
+            
+            // 找出最大月份
+            for (const [m, c] of Object.entries(monthlyData)) {
+                if (c > maxMonthCount) {
+                    maxMonthCount = c;
+                    maxMonthName = m;
+                }
+            }
+            
+            // 生成月度柱状图 HTML
+            let monthlyBarsHtml = '';
+            // 既然数据主要是11月12月，我们强制展示1-12月或者只展示有数据的月份？
+            // 为了美观，展示有数据的月份即可，或者最近几个月。这里展示所有有数据的月份排序。
+            const sortedMonths = Object.keys(monthlyData).sort((a,b) => parseInt(a) - parseInt(b));
+            
+            sortedMonths.forEach(m => {
+                const count = monthlyData[m];
+                const height = Math.max(10, (count / maxMonthCount) * 100);
+                monthlyBarsHtml += `
+                    <div style="display:flex; flex-direction:column; align-items:center; flex:1;">
+                         <div class="month-bar" style="height: ${height}%; width: 20px;">
+                            <span>${count}</span>
+                         </div>
+                         <div style="margin-top:5px; font-size:10px; color:rgba(255,255,255,0.6)">${m}</div>
+                    </div>
+                `;
+            });
+            
+            const monthComment = maxMonthName ? `${maxMonthName} 是你最健谈的季节，单月发送了 ${maxMonthCount} 条消息。` : "你总是保持着神秘的沉默。";
+
+            // 2. 基础数据 + 月度统计 (可视化优化)
             const slide2 = `
                 <div class="swiper-slide">
                     <div class="glass-card animate__animated animate__fadeInUp">
-                        <div class="mb-6">
-                            <p class="text-sm text-gray-300 mb-1">在这个群里</p>
-                            <p class="text-lg">你一共活跃了 <span class="highlight-num text-3xl">${stats.activeDays}</span> 天</p>
+                        <div class="mb-6 flex justify-between items-end">
+                            <div>
+                                <p class="text-sm text-gray-300 mb-1">年度活跃天数</p>
+                                <p class="text-lg"><span class="highlight-num text-4xl counter" data-target="${stats.activeDays}">0</span> 天</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-300 mb-1">总消息数</p>
+                                <p class="text-lg"><span class="highlight-num text-3xl counter" data-target="${stats.messageCount}">0</span> 条</p>
+                            </div>
                         </div>
-                        <div class="mb-6">
-                            <p class="text-sm text-gray-300 mb-1">发送了</p>
-                            <p class="text-lg"><span class="highlight-num text-3xl">${stats.messageCount}</span> 条消息</p>
-                            <p class="text-xs text-gray-400 mt-2">包含 ${stats.content.imageCount} 张图片，${stats.content.questionMarkCount} 个问号</p>
+                        
+                        <div class="mb-2 h-32 flex items-end justify-around space-x-2 border-b border-white/10 pb-2">
+                             ${monthlyBarsHtml}
                         </div>
-                        <div class="border-t border-white/10 pt-4 mt-4">
-                            <p class="text-sm italic text-purple-200">
-                                "${stats.content.avgChars} 个字的短句，是你一贯的风格"
-                            </p>
+                        
+                        <div class="comment-box">
+                            <i class="fas fa-quote-left mr-2 opacity-50"></i>${monthComment}
+                        </div>
+
+                        <div class="mt-6 flex justify-around text-xs text-gray-400">
+                             <div class="text-center">
+                                <div class="text-lg text-white font-bold counter" data-target="${stats.content.imageCount}">0</div>
+                                <div>表情包/图</div>
+                             </div>
+                             <div class="text-center">
+                                <div class="text-lg text-white font-bold counter" data-target="${stats.content.questionMarkCount}">0</div>
+                                <div>个问号</div>
+                             </div>
+                             <div class="text-center">
+                                <div class="text-lg text-white font-bold counter" data-target="${stats.content.avgChars}">0</div>
+                                <div>平均字数</div>
+                             </div>
                         </div>
                     </div>
                 </div>
             `;
 
-            // 3. 时间分布 (深夜哲学家)
+            // 3. 时间分布 (可视化优化 + 评语)
+            let hourMax = Math.max(...series.byHour.map(h => h.count));
             let hourBars = '';
-            series.byHour.forEach(h => {
-                let height = Math.max(5, (h.count / 71) * 100); // Normalize to max
-                hourBars += `<div class="bar" style="height: ${height}%;"></div>`;
+            // 找出峰值时段
+            let peakHour = 0;
+            let peakCount = 0;
+            
+            series.byHour.forEach((h, index) => {
+                if(h.count > peakCount) {
+                    peakCount = h.count;
+                    peakHour = index;
+                }
+                let height = Math.max(5, (h.count / hourMax) * 100);
+                hourBars += `<div class="hour-bar" style="height: ${height}%;"></div>`;
             });
+            
+            // 时间评语逻辑
+            let timeComment = "";
+            if (stats.time.nightOwlCount > 20) {
+                timeComment = "你的灵感总在深夜迸发，是个不折不扣的夜猫子。";
+            } else if (stats.time.worktimeRatio > 60) {
+                timeComment = "工作日的白天是你最活跃的时候，摸鱼技巧炉火纯青。";
+            } else {
+                timeComment = `你的生物钟很独特，${peakHour}点是你最活跃的时刻。`;
+            }
+
+            // 刻度
+            let labels = `
+                <div class="absolute bottom-0 w-full flex justify-between text-[10px] text-gray-500 px-1">
+                    <span>0点</span><span>6点</span><span>12点</span><span>18点</span><span>23点</span>
+                </div>
+            `;
 
             const slide3 = `
                 <div class="swiper-slide">
                     <h3 class="text-2xl font-bold mb-6 text-yellow-300 animate__animated animate__fadeInDown">
-                        <i class="fas fa-moon mr-2"></i>夜猫子认证
+                        <i class="fas fa-clock mr-2"></i>时间足迹
                     </h3>
                     <div class="glass-card animate__animated animate__fadeIn">
-                        <p class="mb-4">你在深夜活跃了 <span class="text-yellow-400 font-bold">${stats.time.nightOwlCount}</span> 次</p>
-                        <div class="bg-black/30 p-4 rounded-lg mb-4">
-                            <p class="text-xs text-gray-400 mb-2">那天 ${moments.latestNight.time}，你还在说：</p>
-                            <p class="text-lg font-serif">"${moments.latestNight.text}"</p>
-                            <p class="text-right text-xs text-gray-500 mt-1">${moments.latestNight.date}</p>
+                        <div class="flex justify-between mb-4">
+                            <div>
+                                <p class="text-xs text-gray-400">深夜活跃</p>
+                                <p class="text-xl font-bold text-yellow-400"><span class="counter" data-target="${stats.time.nightOwlCount}">0</span> 次</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400">最晚发言</p>
+                                <p class="text-xl font-bold text-white">${moments.latestNight.time}</p>
+                            </div>
                         </div>
-                        <p class="text-xs text-gray-400 mb-2">24小时活跃分布</p>
-                        <div class="bar-container">
+
+                        <div class="h-32 mb-4 relative flex items-end justify-between pb-4">
                             ${hourBars}
+                            ${labels}
+                        </div>
+                        
+                        <div class="bg-black/30 p-3 rounded-lg mb-2">
+                             <p class="text-xs text-gray-500 mb-1">历史上的那个深夜 (${moments.latestNight.date}):</p>
+                             <p class="text-sm italic text-gray-300">"${moments.latestNight.text}"</p>
+                        </div>
+
+                        <div class="comment-box" style="border-color: #ec4899;">
+                             <i class="fas fa-moon mr-2 opacity-50"></i>${timeComment}
                         </div>
                     </div>
                 </div>
             `;
 
-            // 4. 社交关系
+            // 4. 社交关系 (深度细化)
+            // 生成互动列表
+            let interactionListHtml = '';
+            if (social.topInteractions && social.topInteractions.length > 0) {
+                // 取前 4 名展示
+                social.topInteractions.slice(0, 4).forEach((item, index) => {
+                    // 计算条形图宽度比例
+                    const totalAction = item.detail.atOut + item.detail.replyOut + item.detail.atIn + item.detail.replyIn;
+                    const maxAction = 50; // 假设最大值基准
+                    
+                    // 我对TA (Out)
+                    const outScore = item.detail.atOut + item.detail.replyOut;
+                    const outWidth = Math.min(100, (outScore / totalAction) * 100); // 相对比例
+                    
+                    // TA对我 (In)
+                    const inScore = item.detail.atIn + item.detail.replyIn;
+                    const inWidth = Math.min(100, (inScore / totalAction) * 100);
+
+                    interactionListHtml += `
+                        <div class="interaction-item">
+                            <div class="text-gray-400 font-bold w-6 text-center">${index + 1}</div>
+                            <div class="text-sm font-bold truncate w-24 text-white">${item.nickname}</div>
+                            <div class="interaction-bar-container">
+                                <div class="flex justify-between text-[9px] text-gray-500 mb-0.5">
+                                    <span>我${outScore}</span>
+                                    <span>TA${inScore}</span>
+                                </div>
+                                <div class="flex h-1.5 w-full bg-gray-700 rounded overflow-hidden">
+                                    <div class="bg-blue-500" style="width: ${outWidth}%"></div>
+                                    <div class="bg-pink-500" style="width: ${inWidth}%"></div>
+                                </div>
+                            </div>
+                            <div class="ml-3 text-xs font-mono text-yellow-500">${item.score}</div>
+                        </div>
+                    `;
+                });
+            }
+
             const slide4 = `
                 <div class="swiper-slide">
-                    <h3 class="text-xl mb-8 tracking-widest animate__animated animate__fadeInDown">社交羁绊</h3>
+                    <h3 class="text-xl mb-4 tracking-widest animate__animated animate__fadeInDown">社交羁绊</h3>
                     
-                    <div class="relative w-full max-w-xs h-64">
-                        <!-- Best CP -->
-                        <div class="absolute top-0 left-0 animate__animated animate__fadeInLeft">
-                            <div class="glass-card p-3" style="width: 160px;">
-                                <div class="text-pink-400 text-xs mb-1"><i class="fas fa-heart"></i> 最佳CP</div>
-                                <div class="font-bold text-lg">${social.bestCP.userB.nickname}</div>
-                                <div class="text-xs text-gray-400">默契度 ${social.bestCP.interactionScore}</div>
-                            </div>
+                    <!-- Top Cards -->
+                    <div class="flex gap-4 w-full max-w-sm mb-6">
+                        <div class="glass-card p-3 flex-1 flex flex-col items-center animate__animated animate__fadeInLeft">
+                            <div class="text-pink-400 text-xs mb-1"><i class="fas fa-heart"></i> 最佳CP</div>
+                            <div class="font-bold text-sm truncate w-full text-center">${social.bestCP.userB.nickname}</div>
+                            <div class="text-[10px] text-gray-400 mt-1">默契度 <span class="counter" data-target="${social.bestCP.interactionScore}">0</span></div>
                         </div>
-
-                        <!-- Care You -->
-                        <div class="absolute bottom-0 right-0 animate__animated animate__fadeInRight animate__delay-1s">
-                            <div class="glass-card p-3" style="width: 160px; border-color: #34d399;">
-                                <div class="text-green-400 text-xs mb-1"><i class="fas fa-seedling"></i> 最关注你</div>
-                                <div class="font-bold text-lg">${social.mostCareYou.nickname}</div>
-                                <div class="text-xs text-gray-400">互动分 ${social.mostCareYou.score}</div>
-                            </div>
+                        <div class="glass-card p-3 flex-1 flex flex-col items-center animate__animated animate__fadeInRight">
+                            <div class="text-green-400 text-xs mb-1"><i class="fas fa-seedling"></i> 最关注你</div>
+                            <div class="font-bold text-sm truncate w-full text-center">${social.mostCareYou.nickname}</div>
+                            <div class="text-[10px] text-gray-400 mt-1">互动分 <span class="counter" data-target="${social.mostCareYou.score}">0</span></div>
                         </div>
+                    </div>
 
-                        <!-- Special / Lick Dog -->
-                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate__animated animate__zoomIn animate__delay-2s">
-                            <div class="text-center">
-                                <div class="text-4xl mb-1">🔗</div>
-                                <div class="text-xs text-gray-400">单向连接</div>
-                                <div class="font-bold">${social.lickDogTarget.nickname}</div>
-                                <div class="text-xs text-gray-500">缘分值 ${social.lickDogTarget.count}</div>
-                            </div>
+                    <!-- Leaderboard -->
+                    <div class="glass-card p-4 animate__animated animate__fadeInUp w-full max-w-sm">
+                        <h4 class="text-xs text-gray-400 mb-3 border-b border-gray-700 pb-2 flex justify-between">
+                            <span>互动排行榜</span>
+                            <span>双向数据(我/TA)</span>
+                        </h4>
+                        <div class="flex flex-col">
+                            ${interactionListHtml}
                         </div>
                     </div>
                 </div>
             `;
 
-            // 5. 关键词与回响 (High Priority Requirement)
-            let keywordsHtml = moments.wordCloud.slice(0, 8).map(w => 
-                `<span class="keyword-item" style="font-size: ${Math.max(12, Math.min(24, w.count))}px; opacity: ${0.5 + Math.random()*0.5}">${w.word}</span>`
-            ).join('');
+            // 5. 关键词与回响 (沉浸式词云) - 保持不变但优化动画
+            const maxWordCount = Math.max(...moments.wordCloud.map(w => w.count));
+            
+            let floatingWordsHtml = moments.wordCloud.map((w, i) => {
+                const size = 12 + (w.count / maxWordCount) * 20; 
+                const opacity = 0.1 + (w.count / maxWordCount) * 0.5;
+                let top = Math.random() * 80 + 10;
+                let left = Math.random() * 80 + 10;
+                
+                if (top > 30 && top < 70 && left > 20 && left < 80) {
+                   if (Math.random() > 0.5) top = top < 50 ? 15 : 85;
+                   else left = left < 50 ? 10 : 90;
+                }
+
+                const animationDuration = 6 + Math.random() * 8;
+                const animationDelay = Math.random() * -5;
+
+                return `<span class="floating-word" style="
+                    font-size: ${size}px;
+                    opacity: ${opacity};
+                    top: ${top}%;
+                    left: ${left}%;
+                    animation-duration: ${animationDuration}s;
+                    animation-delay: ${animationDelay}s;
+                ">${w.word}</span>`;
+            }).join('');
 
             let representationsHtml = moments.keywordRepresentations.map((text, index) => 
-                `<div class="mb-6 animate__animated animate__fadeInUp" style="animation-delay: ${0.5 + index * 1.5}s">
-                    <div class="text-2xl text-white/90 echo-text font-light text-center">“ ${text} ”</div>
+                `<div class="mb-4 animate__animated animate__fadeInUp" style="animation-delay: ${0.5 + index * 1.5}s">
+                    <div class="text-lg text-white/90 echo-text font-light text-center">“ ${text} ”</div>
                 </div>`
             ).join('');
 
             const slide5 = `
-                <div class="swiper-slide">
-                    <div class="absolute top-10 w-full px-6 flex flex-wrap justify-center opacity-30 pointer-events-none">
-                        ${keywordsHtml}
+                <div class="swiper-slide overflow-hidden">
+                    <div class="absolute inset-0 w-full h-full pointer-events-none">
+                        ${floatingWordsHtml}
                     </div>
 
-                    <div class="z-10 w-full px-4">
+                    <div class="z-10 w-full px-4 relative">
                         <div class="text-center mb-10">
-                            <span class="bg-gradient-to-r from-cyan-500 to-blue-500 text-xs px-2 py-1 rounded">年度关键词</span>
-                            <h2 class="text-4xl font-bold mt-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-white drop-shadow-lg animate__animated animate__pulse animate__infinite">
+                            <span class="bg-gradient-to-r from-cyan-500 to-blue-500 text-xs px-2 py-1 rounded shadow-lg">年度关键词</span>
+                            <h2 class="text-5xl font-bold mt-4 text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-purple-300 drop-shadow-xl animate__animated animate__pulse animate__infinite">
                                 ${moments.annualKeyword}
                             </h2>
                         </div>
 
-                        <div class="space-y-4">
-                            <p class="text-xs text-center text-gray-400 mb-6">—— 年度回响 ——</p>
+                        <div class="space-y-4 max-w-xs mx-auto">
+                            <p class="text-xs text-center text-gray-400 mb-6 tracking-widest">—— 年度回响 ——</p>
                             ${representationsHtml}
                         </div>
                     </div>
@@ -441,7 +723,6 @@
             const slide6 = `
                 <div class="swiper-slide">
                     <div class="relative w-full max-w-md p-1">
-                        <!-- 金色边框特效 -->
                         <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 via-purple-500 to-blue-500 rounded-2xl blur opacity-75 animate-pulse"></div>
                         
                         <div class="relative bg-gray-900 rounded-2xl p-6 h-full border border-gray-700">
@@ -471,7 +752,7 @@
                      <h2 class="text-2xl font-light mb-4">2026</h2>
                      <p class="text-sm text-gray-400 mb-8">愿你继续保持独特，兴致盎然</p>
                      
-                     <button class="bg-white text-black px-8 py-2 rounded-full font-bold animate__animated animate__pulse animate__infinite" onclick="location.reload()">
+                     <button class="bg-white text-black px-8 py-2 rounded-full font-bold animate__animated animate__pulse animate__infinite transition transform hover:scale-105" onclick="location.reload()">
                         再看一遍
                      </button>
                      <p class="absolute bottom-4 text-[10px] text-gray-600">Generated at ${formatDate(reportData.generatedAt)}</p>
@@ -495,15 +776,18 @@
                 },
                 on: {
                     slideChangeTransitionStart: function () {
-                        // 重置动画：移除所有带有 animate__animated 的类的动画状态，强制重绘
                         const activeSlide = this.slides[this.activeIndex];
-                        const animatedElements = activeSlide.querySelectorAll('.animate__animated');
                         
+                        // 重置普通动画
+                        const animatedElements = activeSlide.querySelectorAll('.animate__animated');
                         animatedElements.forEach(el => {
                             el.style.display = 'none';
-                            el.offsetHeight; // trigger reflow
+                            el.offsetHeight; 
                             el.style.display = '';
                         });
+
+                        // 触发数字增长动画
+                        triggerCounters(activeSlide);
                     }
                 }
             });
