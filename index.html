@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>2025 群聊社交人格周报</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #0f172a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* 动态背景流光 */
+        .ambient-light {
+            position: absolute;
+            width: 150vw;
+            height: 150vw;
+            background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(15,23,42,0) 70%);
+            top: -50%;
+            left: -50%;
+            animation: floatLight 15s infinite alternate ease-in-out;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .ambient-light-2 {
+            position: absolute;
+            width: 120vw;
+            height: 120vw;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(15,23,42,0) 70%);
+            bottom: -30%;
+            right: -30%;
+            animation: floatLight 20s infinite alternate-reverse ease-in-out;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes floatLight {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(10%, 10%) scale(1.1); }
+        }
+
+        /* Swiper 容器 */
+        .swiper {
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* 玻璃拟态卡片 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 动画类 */
+        .slide-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .swiper-slide-active .slide-in-up {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 延迟类 */
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+        .delay-400 { transition-delay: 400ms; }
+        .delay-500 { transition-delay: 500ms; }
+
+        /* 头像光圈 */
+        .avatar-glow {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+            animation: pulseGlow 3s infinite;
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 0 60px rgba(139, 92, 246, 0.8); }
+        }
+
+        /* 音乐播放器旋转 */
+        .spin-slow {
+            animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 词云气泡动画 */
+        .word-bubble {
+            animation: floatBubble 6s ease-in-out infinite;
+        }
+        @keyframes floatBubble {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 隐藏滚动条 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 黑胶唱片纹理 */
+        .vinyl-record {
+            background: conic-gradient(
+                #1e1e1e 0%, #333 10%, #1e1e1e 20%, #333 30%,
+                #1e1e1e 40%, #333 50%, #1e1e1e 60%, #333 70%,
+                #1e1e1e 80%, #333 90%, #1e1e1e 100%
+            );
+            border-radius: 50%;
+            position: relative;
+        }
+        .vinyl-record::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30%; height: 30%;
+            background: url('') center/cover no-repeat;
+            border-radius: 50%;
+            z-index: 2;
+            border: 2px solid #000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景光效 -->
+    <div class="ambient-light"></div>
+    <div class="ambient-light-2"></div>
+
+    <!-- 顶部音乐条 (装饰) -->
+    <div class="fixed top-0 left-0 w-full z-50 px-5 py-4 flex justify-between items-center bg-gradient-to-b from-slate-900/80 to-transparent">
+        <div class="text-xs text-gray-400 tracking-widest">ASTRBOT REPORT 2025</div>
+        <div class="flex space-x-1 items-end h-4">
+            <div class="w-1 bg-green-400 animate-[bounce_1s_infinite] h-2"></div>
+            <div class="w-1 bg-green-400 animate-[bounce_1.2s_infinite] h-4"></div>
+            <div class="w-1 bg-green-400 animate-[bounce_0.8s_infinite] h-3"></div>
+            <div class="w-1 bg-green-400 animate-[bounce_1.5s_infinite] h-1"></div>
+        </div>
+    </div>
+
+    <!-- Swiper 容器 -->
+    <div class="swiper mySwiper">
+        <div class="swiper-wrapper" id="slides-container">
+            <!-- 幻灯片将通过 JS 动态生成 -->
+        </div>
+        <!-- 分页器 -->
+        <div class="swiper-pagination"></div>
+    </div>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        // ==========================
+        // 核心数据 (直接嵌入 JSON)
+        // ==========================
+        const data = {
+          "schema": "group_persona_report.v2",
+          "generatedAt": 1766043232,
+          "range": { "start": "2025-11-10", "end": "2025-12-10" },
+          "target": {
+            "groupId": "117906890",
+            "userId": "845245653",
+            "nickname": "哈基米",
+            "avatar": { "url": "http://q.qlogo.cn/g?b=qq&nk=845245653&s=640" }
+          },
+          "stats": {
+            "messageCount": 1260,
+            "activeDays": 23,
+            "time": { "worktimeRatio": 36, "nightOwlCount": 30 },
+            "interaction": { "beMentionedCount": 325, "topicKillerRate": 5, "coolness": { "score": 38 } },
+            "content": { "memeRatio": 10, "avgChars": 9 }
+          },
+          "rank": {
+            "personaTitle": {
+              "id": "night_philosopher",
+              "name": "深夜哲学家",
+              "reason": [
+                "你有30天在深夜活跃，是群聊里最熟悉的夜猫子。",
+                "你的发言平均9个字，却常常在深夜引发思考，比如关于AI发展和人生重开。"
+              ],
+              "copywriting": "这一年，你总在凌晨四点思考人生，留下1260条消息的痕迹。\n当别人沉睡时，你的思绪在群聊里清醒地游荡，一句“感觉现在的人生重开有点过于尊重历史了”，道出了多少深夜的共鸣与孤独。"
+            }
+          },
+          "social": {
+            "mostYouCare": { "nickname": "绫", "score": 510 },
+            "mostCareYou": { "nickname": "绫", "score": 318 },
+            "bestCP": { "userB": { "nickname": "LaVI" }, "interactionScore": 35 },
+            "lickDogTarget": { "nickname": "LaVI", "count": 502 },
+            "topInteractions": [
+                { "nickname": "绫", "score": 828 },
+                { "nickname": "LaVI", "score": 808 },
+                { "nickname": "大海参学长", "score": 580 }
+            ]
+          },
+          "moments": {
+            "latestNight": { "date": "2025-11-23", "time": "04:17", "text": "感觉现在的人生重开有点过于尊重历史了" },
+            "annualKeyword": "现在",
+            "wordCloud": [
+              { "word": "现在", "count": 31 }, { "word": "知道", "count": 29 }, { "word": "群友", "count": 25 },
+              { "word": "重开", "count": 18 }, { "word": "候鸟", "count": 16 }, { "word": "gemini", "count": 13 },
+              { "word": "人生", "count": 12 }, { "word": "南梁", "count": 12 }, { "word": "问题", "count": 18 }
+            ],
+            "keywordRepresentations": [
+              "感觉现在的人生重开有点过于尊重历史了",
+              "现在ai发展的比大多数人的学习速度都快",
+              "现在叫扰乱公共秩序"
+            ],
+             "longestMessage": {
+                "chars": 808,
+                "text": "一个南梁在外工作20年终于要回家了，老板问他：你是要20年的工资还是要三个甲基吧？南梁说：我考虑一天，明早再给您答案好吗？老板说可以。南梁考虑了一整晚，第二天他对老板说：我要三个甲基吧。于是老板给他三个甲基吧。第一个比较活跃，第二个是巨型重剑，第三个会释放电流。说完，老板又给南梁一些路费和三个面包..."
+             }
+          },
+          "ai": {
+            "keywords": ["深夜哲学家", "话题终结者", "氛围担当"],
+            "sentiment": "emo",
+            "oneLiner": "在别人沉睡的夜里，你点亮了思想的星火。",
+            "tips": ["深夜灵感虽好，也别忘了给大脑放个假。", "你终结了61个话题，下次试试用表情包暖个场？"]
+          }
+        };
+
+        // ==========================
+        // 渲染逻辑
+        // ==========================
+        const container = document.getElementById('slides-container');
+
+        // 工具：处理长文本换行
+        const formatCopywriting = (text) => text.replace(/\n/g, '<br/>');
+
+        // Slide 1: 封面
+        const slide1 = `
+            <div class="swiper-slide flex flex-col justify-center items-center px-8 relative">
+                <div class="slide-in-up w-32 h-32 rounded-full overflow-hidden mb-8 border-4 border-white/20 avatar-glow relative">
+                    <img src="${data.target.avatar.url}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=Felix'" class="w-full h-full object-cover">
+                </div>
+                <h1 class="slide-in-up delay-100 text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-300">
+                    ${data.target.nickname}
+                </h1>
+                <p class="slide-in-up delay-200 text-gray-400 text-sm tracking-widest mb-12">2025 年度社交人格报告</p>
+                <div class="slide-in-up delay-300 w-full glass-card p-6 text-center">
+                    <p class="text-gray-300 text-sm mb-2">这一年，你一共发出了</p>
+                    <div class="text-5xl font-black text-white mb-2" id="msg-counter">0</div>
+                    <p class="text-gray-300 text-sm">条消息</p>
+                </div>
+                <div class="absolute bottom-10 text-gray-600 text-xs animate-bounce">向上滑动开启回忆</div>
+            </div>
+        `;
+
+        // Slide 2: 活跃度与习惯
+        const slide2 = `
+            <div class="swiper-slide flex flex-col justify-center px-6">
+                <h2 class="slide-in-up text-4xl font-bold mb-8 text-white">时间的<br><span class="text-purple-400">缝隙</span></h2>
+
+                <div class="slide-in-up delay-100 glass-card p-6 mb-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-xs">活跃天数</p>
+                        <p class="text-3xl font-bold">${data.stats.activeDays} <span class="text-sm font-normal text-gray-500">天</span></p>
+                    </div>
+                    <div class="text-4xl">📅</div>
+                </div>
+
+                <div class="slide-in-up delay-200 glass-card p-6 mb-4 bg-gradient-to-r from-indigo-900/50 to-purple-900/50 border-purple-500/30">
+                    <div class="flex justify-between items-start mb-2">
+                        <p class="text-purple-300 text-xs font-bold uppercase">Night Owl</p>
+                        <i class="fa-solid fa-moon text-yellow-200 animate-pulse"></i>
+                    </div>
+                    <p class="text-lg text-gray-200 mb-1">你是一个不折不扣的夜猫子</p>
+                    <p class="text-sm text-gray-400">共有 <span class="text-white font-bold text-xl">${data.stats.time.nightOwlCount}</span> 个夜晚，<br>你在凌晨 1 点后还在说话。</p>
+                </div>
+
+                <div class="slide-in-up delay-300 flex space-x-4">
+                    <div class="glass-card p-4 flex-1 text-center">
+                        <p class="text-gray-400 text-xs mb-1">含图量</p>
+                        <p class="text-xl font-bold">${data.stats.content.memeRatio}%</p>
+                    </div>
+                     <div class="glass-card p-4 flex-1 text-center">
+                        <p class="text-gray-400 text-xs mb-1">平均字数</p>
+                        <p class="text-xl font-bold">${data.stats.content.avgChars}</p>
+                    </div>
+                     <div class="glass-card p-4 flex-1 text-center">
+                        <p class="text-gray-400 text-xs mb-1">高冷度</p>
+                        <p class="text-xl font-bold text-cyan-300">${data.stats.interaction.coolness.score}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Slide 3: 年度关键词 (词云)
+        const topWords = data.moments.wordCloud.slice(0, 5);
+        const wordCloudHtml = topWords.map((w, i) => {
+            const sizes = ['text-3xl', 'text-2xl', 'text-xl', 'text-lg', 'text-base'];
+            const colors = ['text-pink-400', 'text-purple-300', 'text-blue-300', 'text-indigo-200', 'text-gray-400'];
+            const positions = ['text-left pl-4', 'text-right pr-4', 'text-center', 'text-left pl-10', 'text-right pr-8'];
+            return `<div class="${positions[i]} ${colors[i]} ${sizes[i]} font-bold mb-3 word-bubble" style="animation-delay: ${i*0.5}s">${w.word}</div>`;
+        }).join('');
+
+        const sentencesHtml = data.moments.keywordRepresentations.map(s =>
+            `<div class="bg-white/5 rounded-lg p-3 text-xs text-gray-300 mb-2 border-l-2 border-pink-500 italic">"${s}"</div>`
+        ).join('');
+
+        const slide3 = `
+            <div class="swiper-slide flex flex-col justify-center px-6">
+                <div class="slide-in-up absolute top-20 right-4 opacity-20 text-9xl font-black text-white select-none pointer-events-none">
+                    KEY<br>WORD
+                </div>
+                <p class="slide-in-up text-sm text-pink-400 tracking-widest mb-2">YOUR KEYWORD</p>
+                <h2 class="slide-in-up delay-100 text-5xl font-black text-white mb-10">
+                    ${data.moments.annualKeyword}
+                </h2>
+
+                <div class="slide-in-up delay-200 mb-8 relative h-40 flex flex-col justify-center">
+                    ${wordCloudHtml}
+                </div>
+
+                <div class="slide-in-up delay-300 glass-card p-5">
+                    <p class="text-xs text-gray-500 mb-3 uppercase">Memorable Contexts</p>
+                    ${sentencesHtml}
+                </div>
+            </div>
+        `;
+
+        // Slide 4: 最晚安时刻 (Emo 时刻)
+        const slide4 = `
+            <div class="swiper-slide flex flex-col justify-center items-center px-6 bg-gradient-to-b from-slate-900 via-blue-900 to-black">
+                <div class="slide-in-up w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 backdrop-blur-md">
+                    <i class="fa-solid fa-moon text-3xl text-blue-200"></i>
+                </div>
+
+                <p class="slide-in-up delay-100 text-gray-400 text-sm mb-2">${data.moments.latestNight.date} 凌晨</p>
+                <h2 class="slide-in-up delay-200 text-6xl font-thin text-white mb-8 tracking-tighter">${data.moments.latestNight.time}</h2>
+
+                <div class="slide-in-up delay-300 glass-card p-8 w-full relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <p class="text-lg text-blue-100 font-light leading-relaxed italic">
+                        "${data.moments.latestNight.text}"
+                    </p>
+                    <p class="text-right text-xs text-gray-500 mt-4">— 当全世界都睡着的时候</p>
+                </div>
+                <p class="slide-in-up delay-400 text-xs text-gray-600 mt-12 text-center max-w-xs">
+                    这一刻，群聊是你唯一的树洞。
+                </p>
+            </div>
+        `;
+
+        // Slide 5: 社交关系
+        const socialList = data.social.topInteractions.slice(0,3).map((u, i) => `
+             <div class="flex items-center justify-between mb-3 pb-2 border-b border-white/5 last:border-0">
+                <div class="flex items-center space-x-3">
+                    <div class="text-xs font-bold text-gray-500 w-4">0${i+1}</div>
+                    <div class="text-sm text-gray-200">${u.nickname}</div>
+                </div>
+                <div class="text-xs text-purple-300">${u.score} 分</div>
+            </div>
+        `).join('');
+
+        const slide5 = `
+            <div class="swiper-slide flex flex-col justify-center px-6">
+                <h2 class="slide-in-up text-3xl font-bold mb-6">你的<br><span class="text-green-400">羁绊网络</span></h2>
+
+                <div class="slide-in-up delay-100 grid grid-cols-2 gap-4 mb-6">
+                    <div class="glass-card p-4 flex flex-col justify-between h-32 bg-pink-500/10 border-pink-500/20">
+                        <i class="fa-solid fa-heart text-pink-400 mb-2"></i>
+                        <div>
+                            <p class="text-xs text-pink-300">Best CP</p>
+                            <p class="text-lg font-bold text-white truncate">${data.social.bestCP.userB.nickname}</p>
+                        </div>
+                    </div>
+                    <div class="glass-card p-4 flex flex-col justify-between h-32 bg-blue-500/10 border-blue-500/20">
+                        <i class="fa-solid fa-paper-plane text-blue-400 mb-2"></i>
+                        <div>
+                            <p class="text-xs text-blue-300">单向奔赴</p>
+                            <p class="text-lg font-bold text-white truncate">${data.social.lickDogTarget.nickname}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slide-in-up delay-200 glass-card p-6">
+                    <p class="text-xs text-gray-400 mb-4 uppercase tracking-widest">Top Interactions</p>
+                    ${socialList}
+                </div>
+
+                <div class="slide-in-up delay-300 mt-6 glass-card p-4 bg-gray-800/50">
+                    <p class="text-xs text-gray-400 mb-1">最长的一条消息 (808字)</p>
+                    <p class="text-xs text-gray-500 italic truncate">"${data.moments.longestMessage.text.substring(0, 30)}..."</p>
+                </div>
+            </div>
+        `;
+
+        // Slide 6: 年度人设 (Rank)
+        const slide6 = `
+            <div class="swiper-slide flex flex-col justify-center items-center px-6 text-center relative overflow-hidden">
+                <!-- 旋转背景 -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] bg-gradient-to-tr from-purple-900/30 via-transparent to-transparent rounded-full spin-slow z-[-1]"></div>
+
+                <p class="slide-in-up text-sm text-purple-400 tracking-[0.3em] mb-4">ANNUAL PERSONA</p>
+
+                <div class="slide-in-up delay-100 mb-8 relative">
+                    <div class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-white via-purple-200 to-gray-500 drop-shadow-lg">
+                        ${data.rank.personaTitle.name}
+                    </div>
+                    <!-- 装饰线 -->
+                    <div class="w-20 h-1 bg-purple-500 mx-auto mt-4 rounded-full"></div>
+                </div>
+
+                <div class="slide-in-up delay-200 glass-card p-8 bg-black/20 backdrop-blur-xl border-t border-white/10">
+                    <p class="text-sm leading-7 text-gray-200 text-justify">
+                        ${formatCopywriting(data.rank.personaTitle.copywriting)}
+                    </p>
+                </div>
+
+                <div class="slide-in-up delay-300 mt-8 flex flex-wrap justify-center gap-2">
+                    ${data.ai.keywords.map(k => `<span class="px-3 py-1 rounded-full border border-gray-600 text-xs text-gray-400">${k}</span>`).join('')}
+                </div>
+            </div>
+        `;
+
+        // Slide 7: 总结 (AI Tips)
+        const slide7 = `
+            <div class="swiper-slide flex flex-col justify-center px-6 bg-slate-900">
+                 <div class="slide-in-up mb-10">
+                    <i class="fa-solid fa-quote-left text-4xl text-gray-700 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-white leading-relaxed">
+                        ${data.ai.oneLiner}
+                    </h2>
+                 </div>
+
+                 <div class="slide-in-up delay-100 glass-card p-6 mb-4 border-l-4 border-yellow-500">
+                    <p class="text-yellow-500 font-bold text-xs mb-2 uppercase">AI Tips</p>
+                    <p class="text-sm text-gray-300 mb-2">💡 ${data.ai.tips[0]}</p>
+                    <p class="text-sm text-gray-300">💡 ${data.ai.tips[1]}</p>
+                 </div>
+
+                 <div class="slide-in-up delay-300 mt-12 text-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-500 rounded-lg mx-auto mb-4 flex items-center justify-center shadow-lg shadow-green-500/20">
+                        <i class="fa-solid fa-share-nodes text-2xl text-white"></i>
+                    </div>
+                    <button class="bg-white text-black px-8 py-3 rounded-full font-bold text-sm shadow-lg active:scale-95 transition-transform" onclick="shareReport()">
+                        分享我的年度报告
+                    </button>
+                    <p class="text-gray-600 text-xs mt-4">Generated by AstrBot Plugin</p>
+                 </div>
+            </div>
+        `;
+
+        // 注入 Slides
+        container.innerHTML = slide1 + slide2 + slide3 + slide4 + slide5 + slide6 + slide7;
+
+        // ==========================
+        // 初始化 Swiper
+        // ==========================
+        const swiper = new Swiper(".mySwiper", {
+            direction: "vertical",
+            effect: "fade", // 使用淡入淡出效果更有高级感
+            fadeEffect: { crossFade: true },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+            mousewheel: true,
+            on: {
+                init: function () {
+                    animateNumbers();
+                },
+                slideChangeTransitionStart: function () {
+                    // 重置动画：移除 active class
+                    const activeSlide = this.slides[this.activeIndex];
+                    const prevSlide = this.slides[this.previousIndex];
+
+                    // 简单的重绘技巧触发 CSS 动画
+                    // 注意：Swiper 的 effect: fade 可能会让 slide 始终存在 DOM 中
+                    // 这里我们依赖 CSS 的 .swiper-slide-active 选择器来触发动画
+                }
+            }
+        });
+
+        // 数字增长动画
+        function animateNumbers() {
+            const el = document.getElementById('msg-counter');
+            const target = data.stats.messageCount;
+            let current = 0;
+            const duration = 1500;
+            const step = target / (duration / 16);
+
+            function update() {
+                current += step;
+                if (current < target) {
+                    el.innerText = Math.floor(current);
+                    requestAnimationFrame(update);
+                } else {
+                    el.innerText = target;
+                }
+            }
+            update();
+        }
+
+        // ==========================
+        // 分享功能
+        // ==========================
+        async function shareReport() {
+            const shareData = {
+                title: '我的2025群聊社交人格周报',
+                text: `我的年度关键词是：${data.moments.annualKeyword}，人设是【${data.rank.personaTitle.name}】！快来看看你的吧。`,
+                url: window.location.href // 注意：如果是本地文件(file://)，分享的URL别人无法打开，需要部署
+            };
+
+            // 优先尝试 Web Share API (移动端友好)
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('分享取消或失败:', err);
+                }
+            } else {
+                // 回退方案：提示部署或截图
+                if (window.location.protocol === 'file:') {
+                     alert('截图分享给群友吧！(提示：本地文件无法直接分享链接，请将 HTML 部署到 Netlify/Github Pages)');
+                } else {
+                     // 简单复制链接
+                     navigator.clipboard.writeText(`${shareData.text} ${shareData.url}`).then(() => {
+                        alert('链接和文案已复制到剪贴板！快去粘贴分享吧。');
+                     }).catch(() => {
+                        alert('截图分享给群友吧！');
+                     });
+                }
+            }
+        }
+
+    </script>
+</body>
+</html>
